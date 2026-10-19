@@ -6,6 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="地震播报">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>地震地质每日播报</title>
 <style>
   :root{
@@ -243,6 +247,15 @@
     document.getElementById('clock').textContent=h+':'+m;
   }
   tick(); setInterval(tick,30000);
+
+  /* 注册 Service Worker（离线缓存 + PWA 安装） */
+  if ('serviceWorker' in navigator && location.protocol !== 'http:') {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(err){
+        console.warn('Service Worker 注册失败：', err);
+      });
+    });
+  }
 </script>
 </body>
 </html>
