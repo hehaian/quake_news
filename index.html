@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obShR9BMY=" crossorigin="">
+<link rel="stylesheet" href="assets/leaflet.css">
 <title>地震地质每日播报</title>
 <style>
   :root{
@@ -263,7 +263,7 @@
     </div>
   </div>
 </div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjZZKhZ9w2A6/6L0llofED4cSRNF0E=" crossorigin=""></script>
+<script src="assets/leaflet.js"></script>
 <script>
   function tick(){
     var d=new Date();
@@ -292,15 +292,19 @@
   }
 
   function initQuakeMap(){
-    if (typeof L === 'undefined') return;          // Leaflet 未加载（断网）则跳过
+    if (typeof L === 'undefined') return;          // Leaflet 未加载则跳过
     var pts = QUAKE_POINTS.slice();
-    var map = L.map('quakeMap', { zoomControl: true, attributionControl: true, scrollWheelZoom: false });
+    var map = L.map('quakeMap', {
+      zoomControl: true,
+      attributionControl: true,
+      scrollWheelZoom: false,
+      minZoom: 1, maxZoom: 6,
+      worldCopyJump: false
+    });
 
-    // 深色底图（CartoDB Dark Matter），无网时显示为深色背景，圆点仍可见
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      subdomains: 'abcd',
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap &copy; CARTO'
+    // 本地世界地图底图（assets/world.png，等距投影简化绘制），不依赖任何境外服务
+    L.imageOverlay('assets/world.png', [[-85, -180], [85, 180]], {
+      attribution: '底图：本地简化世界地图（随仓库分发，无需外网）'
     }).addTo(map);
 
     var bounds = [];
@@ -323,7 +327,7 @@
     } else if (pts.length === 1) {
       map.setView([pts[0].lat, pts[0].lng], 4);
     } else {
-      map.setView([20, 110], 3);
+      map.setView([20, 110], 2);
     }
 
     setTimeout(function(){ map.invalidateSize(); }, 300);   // 容器显示后再校正尺寸
