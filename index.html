@@ -10,6 +10,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obShR9BMY=" crossorigin="">
 <title>地震地质每日播报</title>
 <style>
   :root{
@@ -155,6 +156,25 @@
     flex:0 0 auto;font-size:13px;font-weight:700;color:#0d1117;
     background:var(--accent2);border-radius:20px;padding:9px 16px;
   }
+
+  /* 发震地点地图 */
+  .map-wrap{padding:0 4px;}
+  #quakeMap{
+    width:100%; height:300px; border-radius:14px; overflow:hidden;
+    border:1px solid var(--line); background:#0d1117;
+  }
+  #quakeMap .leaflet-container{background:#0d1117;}
+  .map-legend{
+    display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center;
+    padding:10px 4px 0; font-size:11px; color:var(--sub);
+  }
+  .map-legend .lg{display:inline-flex; align-items:center; gap:6px;}
+  .map-legend .lg i{display:inline-block; border-radius:50%;}
+  .map-legend .lg small{color:var(--sub);}
+  .map-legend .lg.s i{width:8px;height:8px;background:#57d9a3;}
+  .map-legend .lg.m i{width:14px;height:14px;background:#f0a232;}
+  .map-legend .lg.l i{width:22px;height:22px;background:#e0533f;}
+  .map-note{font-size:11px;color:#5b6572;padding:6px 4px 0;line-height:1.5;}
   @media(min-width:480px){
     body{background:#0a0d12;}
     .app{border-left:1px solid #1b2230; border-right:1px solid #1b2230;}
@@ -221,6 +241,18 @@
       </div>
     </div>
 
+    <!-- 发震地点地图 -->
+    <div class="section-title">发震地点地图</div>
+    <div class="map-wrap">
+      <div id="quakeMap"></div>
+      <div class="map-legend">
+        <span class="lg s"><i></i><small>3–3.9 级</small></span>
+        <span class="lg m"><i></i><small>4.0–5.9 级</small></span>
+        <span class="lg l"><i></i><small>≥6.0 级</small></span>
+      </div>
+      <p class="map-note">圆点大小随震级增大；颜色按震级分档。仅标注当日要闻与简讯中可查证坐标的发震事件（河南信阳降雨型地灾预警无单一震中，不标入）。</p>
+    </div>
+
     <!-- 往期播报 -->
     <details class="history">
       <summary>往期播报（最近 7 天）</summary>
@@ -266,6 +298,7 @@
     本页面支持添加到主屏幕，每天 08:00 推送的内容会出现在这里。
   </div>
 </div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjZZKhZ9w2A6/6L0llofED4cSRNF0E=" crossorigin=""></script>
 <script>
   function tick(){
     var d=new Date();
@@ -273,6 +306,69 @@
     document.getElementById('clock').textContent=h+':'+m;
   }
   tick(); setInterval(tick,30000);
+
+  /* ===== 发震地点地图（圆点大小随震级） ===== */
+  // 未来自动任务只需修改此数组；每项：坐标(lat,lng) + 震级 mag + 标签 + 来源/时刻
+  var QUAKE_POINTS = [
+    { lat: 31.90,  lng: 104.46, mag: 4.1, label: '四川绵阳北川 4.1 级', note: '10·19 18:57 · 深度 11 km · 中国地震台网' },
+    { lat: -14.05, lng: 165.68, mag: 6.0, label: '瓦努阿图西北海域 6.0 级', note: '10·19 当地近 19 时 · 深度 10 km · USGS/EMSC' }
+  ];
+
+  // 按震级分档颜色（红=大、橙=中、绿=小）
+  function magColor(m){
+    if (m >= 6.0) return '#e0533f';
+    if (m >= 4.0) return '#f0a232';
+    return '#57d9a3';
+  }
+  // 圆点半径随震级增大（像素），下限保证可见、上限防止遮挡
+  function magRadius(m){
+    var r = 6 + Math.pow(m, 1.6) * 3.0;   // 3级≈13, 4级≈22, 5级≈42, 6级≈70
+    return Math.max(8, Math.min(r, 46));
+  }
+
+  function initQuakeMap(){
+    if (typeof L === 'undefined') return;          // Leaflet 未加载（断网）则跳过
+    var pts = QUAKE_POINTS.slice();
+    var map = L.map('quakeMap', { zoomControl: true, attributionControl: true, scrollWheelZoom: false });
+
+    // 深色底图（CartoDB Dark Matter），无网时显示为深色背景，圆点仍可见
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd',
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap &copy; CARTO'
+    }).addTo(map);
+
+    var bounds = [];
+    pts.forEach(function(p){
+      bounds.push([p.lat, p.lng]);
+      L.circleMarker([p.lat, p.lng], {
+        radius: magRadius(p.mag),
+        color: magColor(p.mag),
+        weight: 2,
+        fillColor: magColor(p.mag),
+        fillOpacity: 0.55,
+        opacity: 0.9
+      }).addTo(map)
+        .bindPopup('<b>' + p.label + '</b><br><span style="color:#8b949e">' + p.note + '</span>')
+        .bindTooltip(p.label + '（' + p.mag.toFixed(1) + ' 级）', { direction: 'top', offset: [0, -6] });
+    });
+
+    if (pts.length >= 2) {
+      map.fitBounds(bounds, { padding: [36, 36] });
+    } else if (pts.length === 1) {
+      map.setView([pts[0].lat, pts[0].lng], 4);
+    } else {
+      map.setView([20, 110], 3);
+    }
+
+    setTimeout(function(){ map.invalidateSize(); }, 300);   // 容器显示后再校正尺寸
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(initQuakeMap, 100); });
+  } else {
+    setTimeout(initQuakeMap, 100);
+  }
 
   /* 注册 Service Worker（离线缓存 + PWA 安装） */
   if ('serviceWorker' in navigator && location.protocol !== 'http:') {
