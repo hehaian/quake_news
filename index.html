@@ -135,6 +135,26 @@
     text-align:center; font-size:12px; color:var(--sub); padding:14px 16px;
   }
   .add-hint b{color:var(--text);}
+
+  /* 页内安装横幅 */
+  .install-bar{
+    display:none; gap:12px; align-items:center;
+    background:linear-gradient(135deg,#1c2333,#161b22);
+    border:1px solid var(--accent2); border-radius:14px;
+    padding:12px 14px; margin:0 16px;
+  }
+  .install-bar.show{display:flex;}
+  .install-bar .ib-ico{
+    width:40px;height:40px;flex:0 0 auto;border-radius:10px;
+    background:radial-gradient(circle at 30% 25%,#ff8a5b,#e0533f 60%,#7d2b1f);
+    display:flex;align-items:center;justify-content:center;font-size:20px;
+  }
+  .install-bar .ib-txt{flex:1;min-width:0;font-size:12px;color:#cfd6dd;line-height:1.4;}
+  .install-bar .ib-txt b{color:var(--text);display:block;font-size:13px;}
+  .install-bar .ib-btn{
+    flex:0 0 auto;font-size:13px;font-weight:700;color:#0d1117;
+    background:var(--accent2);border-radius:20px;padding:9px 16px;
+  }
   @media(min-width:480px){
     body{background:#0a0d12;}
     .app{border-left:1px solid #1b2230; border-right:1px solid #1b2230;}
@@ -151,6 +171,12 @@
       <div class="d" id="date">2026年10月19日</div>
     </div>
     <div class="badge">10·19 19:41 更新</div>
+  </div>
+
+  <div class="install-bar" id="installBar">
+    <div class="ib-ico">📟</div>
+    <div class="ib-txt"><b>把本播报装成桌面 App</b>点击安装，桌面会出现图标，点开就是全屏、无地址栏的应用</div>
+    <div class="ib-btn" id="installBtn">安装</div>
   </div>
 
   <div class="content">
@@ -251,11 +277,44 @@
   /* 注册 Service Worker（离线缓存 + PWA 安装） */
   if ('serviceWorker' in navigator && location.protocol !== 'http:') {
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('sw.js').catch(function(err){
+      navigator.serviceWorker.register('sw.js').then(function(reg){
+        console.log('SW 注册成功：', reg.scope);
+      }).catch(function(err){
         console.warn('Service Worker 注册失败：', err);
       });
     });
   }
+
+  /* 拦截浏览器的 PWA 安装事件，点亮页内"安装"按钮 */
+  (function(){
+    var deferred = null;
+    window.addEventListener('beforeinstallprompt', function(e){
+      e.preventDefault();
+      deferred = e;
+      var bar = document.getElementById('installBar');
+      if (bar) bar.classList.add('show');
+    });
+    document.addEventListener('click', function(e){
+      if (!deferred) return;
+      if (e.target && e.target.id === 'installBtn') {
+        deferred.prompt();
+        deferred.userChoice.then(function(choice){
+          deferred = null;
+          var bar = document.getElementById('installBar');
+          if (bar) bar.style.display = 'none';
+          if (choice && choice.outcome === 'accepted'){
+            console.log('用户已接受安装');
+          } else {
+            console.log('用户取消安装');
+          }
+        });
+      }
+    });
+    window.addEventListener('appinstalled', function(){
+      var bar = document.getElementById('installBar');
+      if (bar) bar.style.display = 'none';
+    });
+  })();
 </script>
 </body>
 </html>
