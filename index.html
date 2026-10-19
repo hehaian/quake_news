@@ -103,6 +103,30 @@
     line-height:1.5;
   }
   .note a{color:var(--accent2); text-decoration:none;}
+
+  /* 往期播报 */
+  .history{
+    background:var(--card); border:1px solid var(--line); border-radius:14px; padding:0; overflow:hidden;
+  }
+  .history summary{
+    font-size:13px; font-weight:700; color:var(--sub); letter-spacing:1px;
+    padding:14px 16px; cursor:pointer; user-select:none; list-style:none;
+  }
+  .history summary::before{content:"📜 ";}
+  .history[open] summary{color:var(--accent2);}
+  .history .h-list{padding:0 16px 14px; display:flex; flex-direction:column; gap:10px;}
+  .history .h-item{
+    display:flex; gap:10px; align-items:flex-start;
+    background:var(--card2); border-radius:10px; padding:12px;
+  }
+  .history .h-date{
+    flex:0 0 auto; font-size:11px; font-weight:700; color:var(--accent2);
+    min-width:38px; text-align:center; padding-top:2px;
+  }
+  .history .h-date small{display:block; color:var(--sub); font-weight:400; font-size:10px;}
+  .history .h-body{flex:1; min-width:0;}
+  .history .h-body .t{font-size:13px; font-weight:600; line-height:1.4;}
+  .history .h-body .meta{font-size:11px; color:var(--sub); margin-top:2px;}
   .add-hint{
     text-align:center; font-size:12px; color:var(--sub); padding:14px 16px;
   }
@@ -166,6 +190,41 @@
         </div>
       </div>
     </div>
+
+    <!-- 往期播报 -->
+    <details class="history">
+      <summary>往期播报（最近 7 天）</summary>
+      <div class="h-list">
+        <div class="h-item">
+          <div class="h-date">10·19<small>今天</small></div>
+          <div class="h-body">
+            <div class="t">云南澜沧地质灾害橙色（Ⅱ级）预警；缅甸 4.3 级；红河州绿春县暴雨橙色预警</div>
+            <div class="meta">要闻 + 2 简讯（今日内容见上方卡片）</div>
+          </div>
+        </div>
+        <div class="h-item">
+          <div class="h-date">10·18<small>昨天</small></div>
+          <div class="h-body">
+            <div class="t">缅甸发生 4.3 级地震（05:08，深度 9 km）；印尼鲁腾 5.2 级（UTC 08:00）；西藏阿里改则县 3.8 级；湖北 7 市地质灾害黄色预警</div>
+            <div class="meta">来源：中国地震台网 / USGS / 湖北省自然资源厅</div>
+          </div>
+        </div>
+        <div class="h-item">
+          <div class="h-date">10·17<small></small></div>
+          <div class="h-body">
+            <div class="t">新疆巴音郭楞州和静县 3.2 级（02:50）；西藏日喀则拉孜县 3.0 级（03:35）；巴基斯坦 5.9 级（13:06）</div>
+            <div class="meta">来源：中国地震台网</div>
+          </div>
+        </div>
+        <div class="h-item">
+          <div class="h-date">10·16<small></small></div>
+          <div class="h-body">
+            <div class="t">俄罗斯堪察加半岛 6.9 级（深度 150 km）；青海海南州兴海县 3.1 级</div>
+            <div class="meta">来源：中国地震台网</div>
+          </div>
+        </div>
+      </div>
+    </details>
 
     <div class="note">
       数据来自 <a href="https://www.ceic.ac.cn/" target="_blank">中国地震台网</a> 及公开权威渠道，均为可查证事实；<br>无法查证的内容本卡片不展示。事实与解读已分块呈现。
