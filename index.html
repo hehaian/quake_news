@@ -324,18 +324,32 @@
     }).addTo(map);
     localTiles.on('tileerror', function(e){ e.tile.style.display = 'none'; });  // 缺片露出简化底图
 
-    // 第 1 层（最上，主观感）：高德矢量中文底图（境内在线服务 webrd.is.autonavi.com，style=8）
-    // 网络无法访问高德时逐片 tileerror 隐藏，自动露出下层本地高清瓦片/简化底图，绝不留白
+    // 第 1 层（最上）：高德底图，限中国范围（海外高德返回空白占位图，海外 z4+ 由本地 OSM 高清瓦片接管）
+    var CN_BOUNDS = [[2, 72], [55, 140]];   // 中国本土+港澳台大致范围
+    // 1a：矢量路网层（style=8，道路/水系/地名底面）
     var amap = L.tileLayer(
       'https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
       {
         subdomains: ['1', '2', '3', '4'],
         minZoom: 3, maxZoom: 18,
+        bounds: CN_BOUNDS,
         errorTileUrl: '',
-        attribution: '© 高德地图 AutoNavi · 本地 OSM 兜底'
+        attribution: '© 高德地图 AutoNavi · 海外底图 © OSM · 本地兜底'
       }
     ).addTo(map);
     amap.on('tileerror', function(e){ e.tile.style.display = 'none'; });
+
+    // 1b：路网注记 / POI 文字层（style=7，透明底，叠加在矢量层之上提供路名与 POI 细节）
+    var amapPoi = L.tileLayer(
+      'https://wprd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
+      {
+        subdomains: ['1', '2', '3', '4'],
+        minZoom: 8, maxZoom: 18,
+        bounds: CN_BOUNDS,
+        errorTileUrl: ''
+      }
+    ).addTo(map);
+    amapPoi.on('tileerror', function(e){ e.tile.style.display = 'none'; });   // 逐片失败隐藏，露出下层
 
     var bounds = [];
     pts.forEach(function(p){
