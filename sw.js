@@ -1,5 +1,5 @@
 /* Service Worker for 地震地质每日播报 PWA (健壮版) */
-const CACHE_NAME = 'quake-broadcast-v2';
+const CACHE_NAME = 'quake-broadcast-v3';
 
 /* 只缓存确定的静态资源；导航请求 ./ 交由 fetch 的 network-first 处理，不进 addAll */
 const CORE_ASSETS = [
