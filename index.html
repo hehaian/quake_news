@@ -220,7 +220,7 @@
         <span class="lg m"><i></i><small>4.0–5.9 级</small></span>
         <span class="lg l"><i></i><small>≥6.0 级</small></span>
       </div>
-      <p class="map-note">圆点大小随震级增大（2026-10-20 起缩小点径）；颜色按震级分档。地图累积标注近 7 天所有可查证发震坐标事件（当前 4 点：瓦努阿图 6.3 / 青海海西 4.6 / 四川北川 4.1 / 新疆尉犁 4.3），以后每发生一条带坐标的新地震就往数组追加一项。今日简讯 2 为泰国山体滑坡与山洪预警（降雨型/气象型地质灾害，无单一震中），不加入地图坐标数组。放大至 4 级缩放可见本地高清瓦片（assets/tiles，OSM 授权，随仓库分发），仍不依赖任何境外服务。</p>
+      <p class="map-note">圆点大小随震级增大（2026-10-20 起缩小点径）；颜色按震级分档。地图累积标注近 7 天所有可查证发震坐标事件（当前 4 点：瓦努阿图 6.3 / 青海海西 4.6 / 四川北川 4.1 / 新疆尉犁 4.3），以后每发生一条带坐标的新地震就往数组追加一项。今日简讯 2 为泰国山体滑坡与山洪预警（降雨型/气象型地质灾害，无单一震中），不加入地图坐标数组。底图优先采用高德中文矢量地图（在线服务 webrd.is.autonavi.com，境内可访问），加载失败时自动逐层回退到仓库内本地 OSM 高清瓦片（assets/tiles）与本地简化世界地图（assets/world.png），任何情况下地图不空白。</p>
     </div>
 
     <!-- 往期播报 -->
@@ -309,21 +309,33 @@
       zoomControl: true,
       attributionControl: true,
       scrollWheelZoom: false,
-      minZoom: 1, maxZoom: 5,
+      minZoom: 1, maxZoom: 18,
       worldCopyJump: false
     });
 
-    // 本地简化世界地图底图（assets/world.png，等距投影覆盖 85°N–85°S），不依赖任何境外服务
+    // 第 3 层（最底，最终兜底）：本地简化世界地图（assets/world.png，等距投影），永远不空白
     L.imageOverlay('assets/world.png', [[-85, -180], [85, 180]], {
-      attribution: '底图：本地简化世界地图 + 本地高清瓦片（随仓库分发，无需外网）'
+      attribution: '底图：本地简化世界地图（随仓库分发，无需外网）'
     }).addTo(map);
 
-    // 本地高清瓦片层（assets/tiles/{z}/{x}/{y}.png，z4 起生效；z5 仅热点区全量）
-    var tileLayer = L.tileLayer('assets/tiles/{z}/{x}/{y}.png', {
+    // 第 2 层：本地高清瓦片（assets/tiles/{z}/{x}/{y}.png，z4–z5 热点区；OSM 授权，随仓库分发）
+    var localTiles = L.tileLayer('assets/tiles/{z}/{x}/{y}.png', {
       minZoom: 4, maxZoom: 5
     }).addTo(map);
-    // 缺失瓦片（z5 非热点区）时隐藏坏图，露出下方简化底图
-    tileLayer.on('tileerror', function(e){ e.tile.style.display = 'none'; });
+    localTiles.on('tileerror', function(e){ e.tile.style.display = 'none'; });  // 缺片露出简化底图
+
+    // 第 1 层（最上，主观感）：高德矢量中文底图（境内在线服务 webrd.is.autonavi.com，style=8）
+    // 网络无法访问高德时逐片 tileerror 隐藏，自动露出下层本地高清瓦片/简化底图，绝不留白
+    var amap = L.tileLayer(
+      'https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+      {
+        subdomains: ['1', '2', '3', '4'],
+        minZoom: 3, maxZoom: 18,
+        errorTileUrl: '',
+        attribution: '© 高德地图 AutoNavi · 本地 OSM 兜底'
+      }
+    ).addTo(map);
+    amap.on('tileerror', function(e){ e.tile.style.display = 'none'; });
 
     var bounds = [];
     pts.forEach(function(p){
@@ -341,11 +353,11 @@
     });
 
     if (pts.length >= 2) {
-      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 3 });   // 默认缩放到同时看到中国环太平洋两区，可放大至高清瓦片
+      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 5 });   // 默认缩放到同时看到中国+环太平洋两点，再放大至高德细节
     } else if (pts.length === 1) {
-      map.setView([pts[0].lat, pts[0].lng], 4);
+      map.setView([pts[0].lat, pts[0].lng], 6);
     } else {
-      map.setView([20, 110], 2);
+      map.setView([20, 110], 3);
     }
 
     setTimeout(function(){ map.invalidateSize(); }, 300);   // 容器显示后再校正尺寸
