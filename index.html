@@ -375,13 +375,10 @@
         .bindTooltip(p.label + '（' + p.mag.toFixed(1) + ' 级）', { direction: 'top', offset: [0, -6] });
     });
 
-    if (pts.length >= 2) {
-      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 5 });   // 默认缩放到同时看到中国+环太平洋两点，再放大至高德细节
-    } else if (pts.length === 1) {
-      map.setView([pts[0].lat, pts[0].lng], 6);
-    } else {
-      map.setView([20, 110], 3);
-    }
+    // 默认视野贴近用户参考图（高德 App 的"亚洲/中国居中、中景缩放"明亮视野）：
+    // 以中国为中心、z5，绿色陆地+蓝色海洋+红色国界清晰可见（高德矢量层 within CN_BOUNDS 渲染）
+    map.setView([33, 105], 5);
+    // 全部发震点仍渲染在图上；向东南（瓦努阿图）/西北（阿拉斯加）拖动即可看到，也可再放大查看高德细节
 
     setTimeout(function(){ map.invalidateSize(); }, 300);   // 容器显示后再校正尺寸
   }
