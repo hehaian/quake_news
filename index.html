@@ -220,7 +220,7 @@
         <span class="lg m"><i></i><small>4.0–5.9 级</small></span>
         <span class="lg l"><i></i><small>≥6.0 级</small></span>
       </div>
-      <p class="map-note">圆点大小随震级增大（2026-10-20 起缩小点径）；颜色按震级分档。地图累积标注近 7 天所有可查证发震坐标事件（当前 16 点：新疆塔什库尔干 4.0 / 瓦努阿图 6.3 / 青海海西 4.6 / 四川北川 4.1 / 新疆尉犁 4.3 / 阿拉斯加 5.0 / 云南元江 3.0 / 巴拿马 Burica 5.4 / 新疆和田 3.2 / 四川北川 4.6 / 瓦努阿图珊瑚海 5.0 / 印尼 Meulaboh 5.0 / 雷克雅内斯海岭 5.4 / 非洲南端 5.1 / 瓦努阿图 5.0 / 西藏双湖 3.0），以后每发生一条带坐标的新地震就往数组追加一项（10·22 13:32 复查：本时刻台网活页最新带坐标事件仍为西藏双湖 3.0（10·22 09:07）、USGS 无高于 5.4 的新测定事件，故本时刻无新增坐标点，保持 16 点；既有点日期 10·19–10·22 全部在 7 天内无需清理；雷克雅内斯海岭 5.3（10·22 05:38 北京）与两次 5.0（10·22 05:58、03:06）与要闻 5.4 同一海岭、无独立新坐标，不重复加入；封面新闻"尼加拉瓜 6.5 级"经核实为 2021·09 旧闻、国内媒体流传的"肃北 4.7/北川 4.7/南澳 5.0/内江威远 5.4"为往年旧事件，均未加入）。降雨型/气象型地质灾害预警没有单一震中，不加入数组（当日云南省西双版纳州勐腊县 10·22 08:12 暴雨橙色预警、红河州元阳县 02:17 与绿春县 05:01 暴雨黄色预警，及越南莱州·奠边·河静三省 10·22 山洪滑坡一级预警均属此类）。底图优先采用高德中文矢量地图（在线服务 webrd.is.autonavi.com，境内可访问），加载失败时自动逐层回退到仓库内本地 OSM 高清瓦片（assets/tiles）与本地简化世界地图（assets/world.png），任何情况下地图不空白。</p>
+      <p class="map-note">圆点大小随震级增大（2026-10-20 起缩小点径）；颜色按震级分档。地图累积标注近 7 天所有可查证发震坐标事件（当前 16 点：新疆塔什库尔干 4.0 / 瓦努阿图 6.3 / 青海海西 4.6 / 四川北川 4.1 / 新疆尉犁 4.3 / 阿拉斯加 5.0 / 云南元江 3.0 / 巴拿马 Burica 5.4 / 新疆和田 3.2 / 四川北川 4.6 / 瓦努阿图珊瑚海 5.0 / 印尼 Meulaboh 5.0 / 雷克雅内斯海岭 5.4 / 非洲南端 5.1 / 瓦努阿图 5.0 / 西藏双湖 3.0），以后每发生一条带坐标的新地震就往数组追加一项（10·22 13:32 复查：本时刻台网活页最新带坐标事件仍为西藏双湖 3.0（10·22 09:07）、USGS 无高于 5.4 的新测定事件，故本时刻无新增坐标点，保持 16 点；既有点日期 10·19–10·22 全部在 7 天内无需清理；雷克雅内斯海岭 5.3（10·22 05:38 北京）与两次 5.0（10·22 05:58、03:06）与要闻 5.4 同一海岭、无独立新坐标，不重复加入；封面新闻"尼加拉瓜 6.5 级"经核实为 2021·09 旧闻、国内媒体流传的"肃北 4.7/北川 4.7/南澳 5.0/内江威远 5.4"为往年旧事件，均未加入）。降雨型/气象型地质灾害预警没有单一震中，不加入数组（当日云南省西双版纳州勐腊县 10·22 08:12 暴雨橙色预警、红河州元阳县 02:17 与绿春县 05:01 暴雨黄色预警，及越南莱州·奠边·河静三省 10·22 山洪滑坡一级预警均属此类）。底图结构自下而上为：本地简化世界地图（assets/world.png，任何情况都不空白）→ Esri 世界地形图（server.arcgisonline.com，真实地形，全球覆盖，让整颗地球看起来像真实地图）→ 本地 OSM 高清瓦片（assets/tiles，z4–z5 热点区）→ 高德中文矢量路网 + 注记层（webrd/wprd.is.autonavi.com，仅中国范围）；各层逐片失败自动隐藏露出下层，任何情况下地图不空白。</p>
     </div>
 
     <!-- 往期播报 -->
@@ -339,20 +339,32 @@
       worldCopyJump: false
     });
 
-    // 第 3 层（最底，最终兜底）：本地简化世界地图（assets/world.png，等距投影），永远不空白
+    // 第 0 层（最底，最终兜底）：本地简化世界地图（assets/world.png，等距投影），任何上层都失败也不空白
     L.imageOverlay('assets/world.png', [[-85, -180], [85, 180]], {
       attribution: '底图：本地简化世界地图（随仓库分发，无需外网）'
     }).addTo(map);
+
+    // 第 1 层：Esri 世界地形图（真实地形底图，全球覆盖，让整颗地球看起来像真实地图）。
+    // 该服务在本网络可达（OSM / Carto 均不可达）；逐片失败自动隐藏，露出下层本地 OSM 与 world.png。
+    var esriTopo = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+      {
+        minZoom: 2, maxZoom: 18,
+        errorTileUrl: '',
+        attribution: '© Esri World Topo Map（真实地形）· © 高德地图 AutoNavi · 本地 OSM / 世界兜底'
+      }
+    ).addTo(map);
+    esriTopo.on('tileerror', function(e){ e.tile.style.display = 'none'; });   // 缺片露出本地 OSM 与简化世界地图
 
     // 第 2 层：本地高清瓦片（assets/tiles/{z}/{x}/{y}.png，z4–z5 热点区；OSM 授权，随仓库分发）
     var localTiles = L.tileLayer('assets/tiles/{z}/{x}/{y}.png', {
       minZoom: 4, maxZoom: 5
     }).addTo(map);
-    localTiles.on('tileerror', function(e){ e.tile.style.display = 'none'; });  // 缺片露出简化底图
+    localTiles.on('tileerror', function(e){ e.tile.style.display = 'none'; });  // 缺片露出 Esri 真实地形
 
-    // 第 1 层（最上）：高德底图，限中国范围（海外高德返回空白占位图，海外 z4+ 由本地 OSM 高清瓦片接管）
+    // 第 3 层（最上）：高德底图，限中国范围（海外高德返回空白占位图，海外 z4+ 由 Esri 真实地形接管）
     var CN_BOUNDS = [[2, 72], [55, 140]];   // 中国本土+港澳台大致范围
-    // 1a：矢量路网层（style=8，道路/水系/地名底面）
+    // 3a：矢量路网层（style=8，道路/水系/地名底面）
     var amap = L.tileLayer(
       'https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
       {
@@ -360,12 +372,12 @@
         minZoom: 3, maxZoom: 18,
         bounds: CN_BOUNDS,
         errorTileUrl: '',
-        attribution: '© 高德地图 AutoNavi · 海外底图 © OSM · 本地兜底'
+        attribution: '© 高德地图 AutoNavi'
       }
     ).addTo(map);
     amap.on('tileerror', function(e){ e.tile.style.display = 'none'; });
 
-    // 1b：路网注记 / POI 文字层（style=7，透明底，叠加在矢量层之上提供路名与 POI 细节）
+    // 3b：路网注记 / POI 文字层（style=7，透明底，叠加在矢量层之上提供路名与 POI 细节）
     var amapPoi = L.tileLayer(
       'https://wprd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
       {
